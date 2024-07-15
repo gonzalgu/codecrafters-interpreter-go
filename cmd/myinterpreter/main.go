@@ -159,6 +159,7 @@ func (s *Scanner) ScanToks() []Token {
 			var tok TokenType
 			if s.match('=') {
 				tok = BANG_EQUAL
+				i++
 			} else {
 				tok = BANG
 			}
@@ -167,6 +168,7 @@ func (s *Scanner) ScanToks() []Token {
 			var tok TokenType
 			if s.match('=') {
 				tok = EQUAL_EQUAL
+				i++
 			} else {
 				tok = EQUAL
 			}
@@ -175,6 +177,7 @@ func (s *Scanner) ScanToks() []Token {
 			var tok TokenType
 			if s.match('=') {
 				tok = LESS_EQUAL
+				i++
 			} else {
 				tok = LESS
 			}
@@ -183,6 +186,7 @@ func (s *Scanner) ScanToks() []Token {
 			var tok TokenType
 			if s.match('=') {
 				tok = GREATER_EQUAL
+				i++
 			} else {
 				tok = GREATER
 			}
