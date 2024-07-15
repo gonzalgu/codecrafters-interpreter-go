@@ -130,9 +130,10 @@ func NewScanner(source []byte) Scanner {
 }
 
 func (s *Scanner) ScanToks() []Token {
-	for _, c := range string(s.source) {
+	for i := 0; i < len(s.source); i++ {
 		s.start = s.current
 		s.current++
+		c := s.source[i]
 		switch c {
 		case '(':
 			s.addToken(LEFT_PAREN)
@@ -154,6 +155,38 @@ func (s *Scanner) ScanToks() []Token {
 			s.addToken(SEMICOLON)
 		case '*':
 			s.addToken(STAR)
+		case '!':
+			var tok TokenType
+			if s.match('=') {
+				tok = BANG_EQUAL
+			} else {
+				tok = BANG
+			}
+			s.addToken(tok)
+		case '=':
+			var tok TokenType
+			if s.match('=') {
+				tok = EQUAL_EQUAL
+			} else {
+				tok = EQUAL
+			}
+			s.addToken(tok)
+		case '<':
+			var tok TokenType
+			if s.match('=') {
+				tok = LESS_EQUAL
+			} else {
+				tok = LESS
+			}
+			s.addToken(tok)
+		case '>':
+			var tok TokenType
+			if s.match('=') {
+				tok = GREATER_EQUAL
+			} else {
+				tok = GREATER
+			}
+			s.addToken(tok)
 		case ' ':
 			fallthrough
 		case '\r':
@@ -178,8 +211,26 @@ func (s *Scanner) ScanToks() []Token {
 	return s.tokens
 }
 
-func reportError(line int, where string, message string) {
-	fmt.Fprintf(os.Stderr, "[line %d] Error%s: %s", line, where, message)
+func (s *Scanner) isAtEnd() bool {
+	return s.current >= len(s.source)
+}
+
+func (s *Scanner) match(expected rune) bool {
+	if s.isAtEnd() {
+		return false
+	}
+	if s.source[s.current] != byte(expected) {
+		return false
+	}
+	s.current++
+	return true
+}
+
+func (s *Scanner) peek() rune {
+	if s.isAtEnd() {
+		return 0
+	}
+	return rune(s.source[s.current])
 }
 
 func (s *Scanner) addToken(tokenType TokenType) {
@@ -189,6 +240,10 @@ func (s *Scanner) addToken(tokenType TokenType) {
 		text,
 		s.line,
 	})
+}
+
+func reportError(line int, where string, message string) {
+	fmt.Fprintf(os.Stderr, "[line %d] Error%s: %s", line, where, message)
 }
 
 func main() {
