@@ -179,7 +179,7 @@ func (s *Scanner) ScanToks() []Token {
 }
 
 func reportError(line int, where string, message string) {
-	fmt.Fprintf(os.Stderr, "[line %d ] Error%s: %s", line, where, message)
+	fmt.Fprintf(os.Stderr, "[line %d] Error%s: %s", line, where, message)
 }
 
 func (s *Scanner) addToken(tokenType TokenType) {
