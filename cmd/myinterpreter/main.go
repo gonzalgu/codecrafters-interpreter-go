@@ -110,11 +110,12 @@ func (t TokenType) String() string {
 }
 
 type Scanner struct {
-	source  []byte
-	tokens  []Token
-	start   int
-	current int
-	line    int
+	source   []byte
+	tokens   []Token
+	start    int
+	current  int
+	line     int
+	hadError bool
 }
 
 func NewScanner(source []byte) Scanner {
@@ -124,6 +125,7 @@ func NewScanner(source []byte) Scanner {
 		0,
 		0,
 		1,
+		false,
 	}
 }
 
@@ -164,6 +166,7 @@ func (s *Scanner) ScanToks() []Token {
 		default:
 			reportError(s.line, "", "Unexpected character:")
 			fmt.Fprintf(os.Stderr, "%c\n", c)
+			s.hadError = true
 			//panic("Unexpected character")
 		}
 	}
@@ -220,7 +223,11 @@ func main() {
 		for _, tok := range tokens {
 			fmt.Printf("%s\n", tok)
 		}
+		if scanner.hadError {
+			os.Exit(65)
+		}
 	} else {
 		fmt.Println("EOF  null") // Placeholder, remove this line when implementing the scanner
 	}
+	os.Exit(0)
 }
