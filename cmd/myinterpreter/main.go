@@ -58,6 +58,10 @@ type Token struct {
 	line      int
 }
 
+func (t Token) String() string {
+	return fmt.Sprintf("%s %s null", t.tokenType, t.lexeme)
+}
+
 func (t TokenType) String() string {
 	return [...]string{
 		"LEFT_PAREN",
@@ -125,7 +129,8 @@ func NewScanner(source []byte) Scanner {
 
 func (s *Scanner) ScanToks() []Token {
 	for _, c := range string(s.source) {
-		//fmt.Printf("rune %d: %v\n", i, c)
+		s.start = s.current
+		s.current++
 		switch c {
 		case '(':
 			s.addToken(LEFT_PAREN)
@@ -146,7 +151,11 @@ func (s *Scanner) ScanToks() []Token {
 			panic("Unexpected character")
 		}
 	}
-	s.addToken(EOF)
+	s.tokens = append(s.tokens, Token{
+		EOF,
+		"",
+		s.line,
+	})
 	return s.tokens
 }
 
@@ -187,9 +196,9 @@ func main() {
 	if len(fileContents) > 0 {
 		scanner := NewScanner(fileContents)
 		tokens := scanner.ScanToks()
-		//fmt.Printf("len tokens = %d\n", len(tokens))
+		//fmt.Printf("%v\n", tokens)
 		for _, tok := range tokens {
-			fmt.Printf("%v\n", tok.tokenType)
+			fmt.Printf("%s\n", tok)
 		}
 	} else {
 		fmt.Println("EOF  null") // Placeholder, remove this line when implementing the scanner
