@@ -162,7 +162,9 @@ func (s *Scanner) ScanToks() []Token {
 			s.line++
 
 		default:
-			panic("Unexpected character")
+			reportError(s.line, "", "Unexpected character:")
+			fmt.Fprintf(os.Stderr, "%c\n", c)
+			//panic("Unexpected character")
 		}
 	}
 	s.tokens = append(s.tokens, Token{
@@ -171,6 +173,10 @@ func (s *Scanner) ScanToks() []Token {
 		s.line,
 	})
 	return s.tokens
+}
+
+func reportError(line int, where string, message string) {
+	fmt.Fprintf(os.Stderr, "[line %d ] Error%s: %s", line, where, message)
 }
 
 func (s *Scanner) addToken(tokenType TokenType) {
