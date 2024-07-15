@@ -165,7 +165,7 @@ func (s *Scanner) ScanToks() []Token {
 
 		default:
 			reportError(s.line, "", "Unexpected character:")
-			fmt.Fprintf(os.Stderr, "%c\n", c)
+			fmt.Fprintf(os.Stderr, " %c\n", c)
 			s.hadError = true
 			//panic("Unexpected character")
 		}
