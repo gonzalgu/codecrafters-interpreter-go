@@ -55,11 +55,27 @@ const (
 type Token struct {
 	tokenType TokenType
 	lexeme    string
+	literal   interface{}
 	line      int
 }
 
+/*
+func (t Token) showLiteral() string {
+	switch t.literal.(type) {
+	case string:
+	default:
+		return "nil"
+	}
+}*/
+
 func (t Token) String() string {
-	return fmt.Sprintf("%s %s null", t.tokenType, t.lexeme)
+	switch t.tokenType {
+	case STRING:
+		return fmt.Sprintf("%s \"%s\" %s", t.tokenType, t.lexeme, t.literal)
+	default:
+		return fmt.Sprintf("%s %s %s", t.tokenType, t.lexeme, "NULL")
+	}
+
 }
 
 func (t TokenType) String() string {
@@ -208,6 +224,8 @@ func (s *Scanner) ScanToks() []Token {
 			//do nothing
 		case '\n':
 			s.line++
+		case '"':
+			s.lexString()
 
 		default:
 			reportError(s.line, "", "Unexpected character:")
@@ -219,9 +237,31 @@ func (s *Scanner) ScanToks() []Token {
 	s.tokens = append(s.tokens, Token{
 		EOF,
 		"",
+		nil,
 		s.line,
 	})
 	return s.tokens
+}
+
+func (s *Scanner) lexString() {
+	for s.peek() != '"' && !s.isAtEnd() {
+		if s.peek() == '\n' {
+			s.line++
+		}
+		s.advance()
+	}
+	if s.isAtEnd() {
+		reportError(s.line, "", "Unterminated string.")
+		return
+	}
+	s.advance()
+	value := string(s.source[s.start+1 : s.current-1])
+	s.tokens = append(s.tokens, Token{
+		STRING,
+		value,
+		value,
+		s.line,
+	})
 }
 
 func (s *Scanner) isAtEnd() bool {
@@ -251,6 +291,7 @@ func (s *Scanner) addToken(tokenType TokenType) {
 	s.tokens = append(s.tokens, Token{
 		tokenType,
 		text,
+		nil,
 		s.line,
 	})
 }
