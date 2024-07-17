@@ -129,11 +129,16 @@ func NewScanner(source []byte) Scanner {
 	}
 }
 
+func (s *Scanner) advance() byte {
+	c := s.source[s.current]
+	s.current++
+	return c
+}
+
 func (s *Scanner) ScanToks() []Token {
-	for i := 0; i < len(s.source); i++ {
+	for !s.isAtEnd() {
 		s.start = s.current
-		s.current++
-		c := s.source[i]
+		c := s.advance()
 		switch c {
 		case '(':
 			s.addToken(LEFT_PAREN)
@@ -159,7 +164,6 @@ func (s *Scanner) ScanToks() []Token {
 			var tok TokenType
 			if s.match('=') {
 				tok = BANG_EQUAL
-				i++
 			} else {
 				tok = BANG
 			}
@@ -168,7 +172,6 @@ func (s *Scanner) ScanToks() []Token {
 			var tok TokenType
 			if s.match('=') {
 				tok = EQUAL_EQUAL
-				i++
 			} else {
 				tok = EQUAL
 			}
@@ -177,7 +180,6 @@ func (s *Scanner) ScanToks() []Token {
 			var tok TokenType
 			if s.match('=') {
 				tok = LESS_EQUAL
-				i++
 			} else {
 				tok = LESS
 			}
@@ -186,11 +188,18 @@ func (s *Scanner) ScanToks() []Token {
 			var tok TokenType
 			if s.match('=') {
 				tok = GREATER_EQUAL
-				i++
 			} else {
 				tok = GREATER
 			}
 			s.addToken(tok)
+		case '/':
+			if s.match('/') {
+				for s.peek() != '\n' && !s.isAtEnd() {
+					s.advance()
+				}
+			} else {
+				s.addToken(SLASH)
+			}
 		case ' ':
 			fallthrough
 		case '\r':
