@@ -73,7 +73,7 @@ func (t Token) String() string {
 	case STRING:
 		return fmt.Sprintf("%s \"%s\" %s", t.tokenType, t.lexeme, t.literal)
 	default:
-		return fmt.Sprintf("%s %s %s", t.tokenType, t.lexeme, "NULL")
+		return fmt.Sprintf("%s %s %s", t.tokenType, t.lexeme, "null")
 	}
 
 }
@@ -252,6 +252,7 @@ func (s *Scanner) lexString() {
 	}
 	if s.isAtEnd() {
 		reportError(s.line, "", "Unterminated string.")
+		s.hadError = true
 		return
 	}
 	s.advance()
