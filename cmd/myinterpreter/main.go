@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"os"
+	"strconv"
 )
 
 type TokenType int
@@ -59,23 +61,30 @@ type Token struct {
 	line      int
 }
 
-/*
-func (t Token) showLiteral() string {
-	switch t.literal.(type) {
-	case string:
-	default:
-		return "nil"
+func printFloat(value float64) string {
+	_, fracPart := math.Modf(value)
+	if fracPart == 0 {
+		return fmt.Sprintf("%.1f", value)
 	}
-}*/
+	return fmt.Sprintf("%g", value)
+}
 
 func (t Token) String() string {
 	switch t.tokenType {
 	case STRING:
 		return fmt.Sprintf("%s \"%s\" %s", t.tokenType, t.lexeme, t.literal)
+	case NUMBER:
+		switch num := t.literal.(type) {
+		case float64:
+			return fmt.Sprintf("%s %s %s", t.tokenType, t.lexeme, printFloat(num))
+		default:
+			fmt.Fprintf(os.Stderr, "error printing float.")
+			os.Exit(65)
+		}
 	default:
 		return fmt.Sprintf("%s %s %s", t.tokenType, t.lexeme, "null")
 	}
-
+	return ""
 }
 
 func (t TokenType) String() string {
@@ -228,9 +237,14 @@ func (s *Scanner) ScanToks() []Token {
 			s.lexString()
 
 		default:
-			reportError(s.line, "", "Unexpected character:")
-			fmt.Fprintf(os.Stderr, " %c\n", c)
-			s.hadError = true
+			if isDigit(c) {
+				s.lexNumber()
+			} else {
+				reportError(s.line, "", "Unexpected character:")
+				fmt.Fprintf(os.Stderr, " %c\n", c)
+				s.hadError = true
+			}
+
 			//panic("Unexpected character")
 		}
 	}
@@ -241,6 +255,37 @@ func (s *Scanner) ScanToks() []Token {
 		s.line,
 	})
 	return s.tokens
+}
+
+func isDigit(c byte) bool {
+	return c >= '0' && c <= '9'
+}
+
+func (s *Scanner) peekNext() byte {
+	if s.current+1 >= len(s.source) {
+		return 0
+	}
+	return s.source[s.current+1]
+}
+
+func (s *Scanner) lexNumber() {
+	for isDigit(s.peek()) {
+		s.advance()
+	}
+	if s.peek() == '.' && isDigit(s.peekNext()) {
+		s.advance()
+		for isDigit(s.peek()) {
+			s.advance()
+		}
+	}
+	text := string(s.source[s.start:s.current])
+	num, _ := strconv.ParseFloat(text, 64)
+	s.tokens = append(s.tokens, Token{
+		NUMBER,
+		text,
+		num,
+		s.line,
+	})
 }
 
 func (s *Scanner) lexString() {
@@ -280,11 +325,11 @@ func (s *Scanner) match(expected rune) bool {
 	return true
 }
 
-func (s *Scanner) peek() rune {
+func (s *Scanner) peek() byte {
 	if s.isAtEnd() {
 		return 0
 	}
-	return rune(s.source[s.current])
+	return s.source[s.current]
 }
 
 func (s *Scanner) addToken(tokenType TokenType) {
