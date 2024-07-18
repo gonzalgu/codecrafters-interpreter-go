@@ -134,6 +134,26 @@ func (t TokenType) String() string {
 	}[t]
 }
 
+// keywords map
+var keywords = map[string]TokenType{
+	"and":    AND,
+	"class":  CLASS,
+	"else":   ELSE,
+	"false":  FALSE,
+	"for":    FOR,
+	"fun":    FUN,
+	"if":     IF,
+	"nil":    NIL,
+	"or":     OR,
+	"print":  PRINT,
+	"return": RETURN,
+	"super":  SUPER,
+	"this":   THIS,
+	"true":   TRUE,
+	"var":    VAR,
+	"while":  WHILE,
+}
+
 type Scanner struct {
 	source   []byte
 	tokens   []Token
@@ -239,6 +259,8 @@ func (s *Scanner) ScanToks() []Token {
 		default:
 			if isDigit(c) {
 				s.lexNumber()
+			} else if isAlpha(c) {
+				s.identifier()
 			} else {
 				reportError(s.line, "", "Unexpected character:")
 				fmt.Fprintf(os.Stderr, " %c\n", c)
@@ -257,8 +279,28 @@ func (s *Scanner) ScanToks() []Token {
 	return s.tokens
 }
 
+func isAlpha(c byte) bool {
+	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_'
+}
+
 func isDigit(c byte) bool {
 	return c >= '0' && c <= '9'
+}
+
+func isAlphaNumeric(c byte) bool {
+	return isAlpha(c) || isDigit(c)
+}
+
+func (s *Scanner) identifier() {
+	for isAlphaNumeric(s.peek()) {
+		s.advance()
+	}
+	text := s.source[s.start:s.current]
+	tokenType, exists := keywords[string(text)]
+	if !exists {
+		tokenType = IDENTIFIER
+	}
+	s.addToken(tokenType)
 }
 
 func (s *Scanner) peekNext() byte {
