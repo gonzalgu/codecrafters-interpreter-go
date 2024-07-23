@@ -15,14 +15,6 @@ func main() {
 	}
 
 	command := os.Args[1]
-
-	if command != "tokenize" {
-		fmt.Fprintf(os.Stderr, "Unknown command: %s\n", command)
-		os.Exit(1)
-	}
-
-	// Uncomment this block to pass the first stage
-
 	filename := os.Args[2]
 	fileContents, err := os.ReadFile(filename)
 	if err != nil {
@@ -30,7 +22,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	if len(fileContents) > 0 {
+	/*
+		if len(fileContents) == 0 {
+			fmt.Println("EOF  null") // Placeholder, remove this line when implementing the scanner
+		}*/
+
+	switch command {
+	case "tokenize":
 		scanner := NewScanner(fileContents)
 		tokens := scanner.ScanToks()
 		//fmt.Printf("%v\n", tokens)
@@ -40,8 +38,22 @@ func main() {
 		if scanner.hadError {
 			os.Exit(65)
 		}
-	} else {
-		fmt.Println("EOF  null") // Placeholder, remove this line when implementing the scanner
+	case "parse":
+		scanner := NewScanner(fileContents)
+		tokens := scanner.ScanToks()
+		parser := NewParser(tokens)
+		result, err := parser.Parse()
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "Parsing error.")
+			os.Exit(1)
+		}
+		fmt.Printf("%s\n", print_ast(result))
+	default:
+		fmt.Fprintf(os.Stderr, "Unknown command: %s\n", command)
+		os.Exit(1)
 	}
+
+	// Uncomment this block to pass the first stage
+
 	os.Exit(0)
 }

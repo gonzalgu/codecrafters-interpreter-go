@@ -1,27 +1,50 @@
 package main
 
-type Visitor interface {
-}
+import "fmt"
 
-type Expr interface {
-	accept(visitor Visitor)
-}
+type ExprType int
 
-type Binary struct {
-	left     Expr
+const (
+	BINARY_EXPR ExprType = iota
+	GROUPING_EXPR
+	LITERAL
+	UNARY
+)
+
+type Expr struct {
+	exprType ExprType
+	left     *Expr
 	operator Token
-	right    Expr
+	right    *Expr
+	value    interface{}
 }
 
-type Grouping struct {
-	expression Expr
+func print_ast(expr *Expr) string {
+	if expr == nil {
+		return ""
+	}
+	switch expr.exprType {
+	case BINARY_EXPR:
+		return parenthesize(expr.operator.lexeme, expr.left, expr.right)
+	case GROUPING_EXPR:
+		return parenthesize("group", expr.left)
+	case LITERAL:
+		if expr.value == nil {
+			return "nil"
+		}
+		return fmt.Sprintf("%v", expr.value)
+	case UNARY:
+		return parenthesize(expr.operator.lexeme, expr.right)
+	}
+	return ""
 }
 
-type Literal struct {
-	value interface{}
-}
-
-type Unary struct {
-	operator Token
-	right    Expr
+func parenthesize(name string, exprs ...*Expr) string {
+	result := "(" + name
+	for _, expr := range exprs {
+		str := print_ast(expr)
+		result += " " + str
+	}
+	result += ")"
+	return result
 }
