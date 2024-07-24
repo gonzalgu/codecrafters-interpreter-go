@@ -6,7 +6,7 @@ import (
 )
 
 func TestLex(t *testing.T) {
-	text := "false"
+	text := "51"
 	scanner := NewScanner([]byte(text))
 	tokens := scanner.ScanToks()
 	for _, tok := range tokens {

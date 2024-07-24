@@ -32,7 +32,14 @@ func print_ast(expr *Expr) string {
 		if expr.value == nil {
 			return "nil"
 		}
-		return fmt.Sprintf("%v", expr.value)
+
+		switch v := expr.value.(type) {
+		case float64:
+			return printFloat(v)
+		default:
+			return fmt.Sprintf("%v", expr.value)
+		}
+
 	case UNARY:
 		return parenthesize(expr.operator.lexeme, expr.right)
 	}
