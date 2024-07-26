@@ -44,8 +44,13 @@ func main() {
 		parser := NewParser(tokens)
 		result, err := parser.Parse()
 		if err != nil {
-			fmt.Fprintln(os.Stderr, "Parsing error.")
-			os.Exit(1)
+			switch e := err.(type) {
+			case ParseError:
+				fmt.Fprintf(os.Stderr, "%s", e.Error())
+			default:
+				fmt.Fprintln(os.Stderr, "Unknown parsing error.")
+			}
+			os.Exit(65)
 		}
 		fmt.Printf("%s\n", print_ast(result))
 	default:

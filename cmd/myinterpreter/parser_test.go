@@ -53,3 +53,28 @@ func TestParseSum(t *testing.T) {
 		fmt.Printf("%s", print_ast(expr))
 	}
 }
+
+func TestParseEmptyGroup(t *testing.T) {
+	tokens := []Token{
+		{
+			tokenType: LEFT_PAREN,
+			lexeme:    "(",
+			line:      1,
+		},
+		{
+			tokenType: RIGHT_PAREN,
+			lexeme:    ")",
+			line:      1,
+		},
+		{
+			tokenType: EOF,
+		},
+	}
+	parser := NewParser(tokens)
+	expr, err := parser.Parse()
+	if err == nil {
+		fmt.Printf("%v", expr)
+		fmt.Printf("%s", print_ast(expr))
+	}
+
+}
